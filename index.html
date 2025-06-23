@@ -1,0 +1,745 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🌟 Sales Summit Directory Kiosk! 🌟</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Custom styles for a more "Googley" feel and smooth transitions */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #e0f2fe 0%, #bbdefb 100%); /* Light blue gradient */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 1rem;
+            overflow-y: auto; /* Allow scrolling for content on small screens */
+        }
+        .container {
+            max-width: 500px;
+            width: 100%;
+            background-color: #ffffff;
+            border-radius: 2rem; /* More rounded */
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1); /* Softer shadow */
+            padding: 2rem;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            animation: fadeIn 0.8s ease-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        input[type="text"] {
+            border: 2px solid #a7d9ff; /* Light blue border */
+            transition: all 0.3s ease-in-out;
+        }
+        input[type="text"]:focus {
+            border-color: #4285f4; /* Google blue on focus */
+            box-shadow: 0 0 0 3px rgba(66, 133, 244, 0.2); /* Soft blue glow */
+            outline: none;
+        }
+        button {
+            background-color: #4285f4; /* Google blue */
+            transition: background-color 0.3s ease-in-out, transform 0.2s ease-in-out, box-shadow 0.3s ease-in-out;
+            box-shadow: 0 4px 10px rgba(66, 133, 244, 0.3);
+        }
+        button:hover {
+            background-color: #3367d6; /* Darker blue on hover */
+            transform: translateY(-2px); /* Slight lift */
+            box-shadow: 0 6px 15px rgba(66, 133, 244, 0.4);
+        }
+        .message-box {
+            background-color: #e3f2fd; /* Lightest blue for messages */
+            border-left: 5px solid #2196f3; /* Blue border for emphasis */
+            color: #1a237e; /* Dark blue text */
+            padding: 1rem;
+            border-radius: 0.75rem;
+            margin-top: 1rem;
+            word-wrap: break-word; /* Ensure long text wraps */
+        }
+        .fact-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.75rem;
+            margin-bottom: 0.5rem;
+        }
+        .fact-icon {
+            font-size: 1.25rem;
+            color: #f4b400; /* Google yellow for icons */
+            flex-shrink: 0;
+            line-height: 1.5rem; /* Align icon with text */
+        }
+        .response-intro {
+            font-size: 1.125rem; /* Larger intro text */
+            font-weight: 600;
+            color: #3f51b5; /* Indigo */
+            margin-bottom: 1rem;
+            text-align: center; /* Ensure titles are centered */
+        }
+        .loading-spinner {
+            border: 4px solid #f3f3f3; /* Light grey */
+            border-top: 4px solid #3498db; /* Blue */
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .profile-visual {
+            width: 100px; /* Fixed size for profile visual */
+            height: 100px; /* Fixed size for profile visual */
+            border-radius: 50%; /* Circular image */
+            object-fit: cover; /* Cover the area, crop if necessary */
+            margin: 0 auto 1rem auto; /* Center and add margin below */
+            border: 3px solid #4285f4; /* Blue border */
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2); /* Subtle shadow */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 2.5rem; /* Large font for initials */
+            font-weight: 600;
+            color: #ffffff; /* White text for initials */
+            background-color: #f4b400; /* Google yellow background for initials */
+            text-transform: uppercase; /* Ensure initials are uppercase */
+        }
+        /* Override for actual images */
+        img.profile-visual {
+            background-color: transparent; /* No background color for images */
+        }
+        /* Small profile visuals are explicitly removed from list items as per request */
+
+        .mic-button {
+            padding: 0.75rem 1rem;
+            width: auto;
+            height: auto;
+            background-color: #db4437; /* Google red */
+            color: white;
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 10px rgba(219, 68, 55, 0.3);
+            transition: background-color 0.3s ease-in-out, transform 0.2s ease-in-out, box-shadow 0.3s ease-in-out;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+        }
+        .mic-button:hover {
+            background-color: #c03327; /* Darker red on hover */
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(66, 133, 244, 0.4);
+        }
+        .mic-button.listening {
+            animation: pulse-red 1s infinite alternate;
+        }
+        @keyframes pulse-red {
+            from { box-shadow: 0 0 0 0 rgba(219, 68, 55, 0.7); }
+            to { box-shadow: 0 0 0 10px rgba(219, 68, 55, 0); }
+        }
+
+        /* New styles for generic messages */
+        .generic-message {
+            font-size: 1.25rem; /* Slightly larger */
+            font-weight: 500; /* Medium weight */
+            color: #3f51b5; /* Indigo tone */
+            text-align: center;
+            padding: 1rem;
+            background-color: #e3f2fd; /* Lightest blue for general messages */
+            border-radius: 1rem;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            margin: 1rem 0; /* Add some margin */
+        }
+        .generic-message.error {
+            color: #c62828; /* Dark red for errors */
+            background-color: #ffebee; /* Light red background */
+        }
+        .generic-message.warning {
+            color: #f57f17; /* Amber for warnings */
+            background-color: #fffde7; /* Light yellow background */
+        }
+
+        /* Specific styling for list containers to center content */
+        .centered-list-container {
+            list-style: none; /* Remove default bullets */
+            padding: 0; /* Remove default padding */
+            display: flex; /* Use flexbox for centering */
+            flex-direction: column; /* Stack items vertically */
+            align-items: center; /* Center horizontally */
+            width: 100%; /* Take full width to center list items */
+        }
+        .centered-list-container li {
+            text-align: center; /* Center the text within each list item */
+            margin-bottom: 0.5rem; /* Spacing between list items */
+        }
+        .clickable-name {
+            cursor: pointer; /* Indicate it's clickable */
+            text-decoration: none; /* No underline by default */
+            color: inherit; /* Inherit color from parent */
+            transition: color 0.2s ease-in-out;
+        }
+        .clickable-name:hover {
+            color: #3367d6; /* Darker blue on hover */
+            text-decoration: underline; /* Underline on hover */
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="text-3xl font-bold text-center text-blue-700">
+            👋 Sales Summit Directory Kiosk! 🎉
+        </h1>
+        <p class="text-center text-gray-600 mb-4">
+            Ready to learn some awesome facts about our amazing sales team? Type in a name or ask a question below!
+        </p>
+
+        <div class="flex flex-col sm:flex-row gap-4">
+            <input
+                type="text"
+                id="nameInput"
+                placeholder="Ask me anything (e.g., tell me about Alex, or who has kids?)"
+                class="flex-grow p-3 border-2 border-blue-300 rounded-xl focus:ring-blue-500 focus:border-blue-500 text-lg"
+                onkeypress="handleKeyPress(event)"
+            />
+            <button
+                onclick="handleQuery()"
+                class="py-3 px-6 bg-blue-600 text-white font-semibold rounded-xl shadow-lg hover:bg-blue-700 transition-all duration-300 transform hover:scale-105"
+            >
+                Let's Discover! ✨
+            </button>
+            <button
+                id="micButton"
+                class="mic-button"
+                title="Speak your query"
+            >
+                <!-- Original Lucide Mic SVG -->
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:white;">
+                    <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" x2="12" y1="19" y2="22"/>
+                </svg>
+            </button>
+        </div>
+
+        <div id="resultDisplay" class="mt-6 p-4 bg-white rounded-xl shadow-inner border border-blue-100 min-h-[150px] flex items-center justify-center text-gray-500">
+            <!-- Initial message will be set by fetchTeamData with generic-message styling -->
+            <p class="generic-message">"Hey there, Sales Superstars! I'm ready to help you discover awesome facts about our team! What can I help you find today? 😊"</p>
+        </div>
+
+         <!-- Custom message box for alerts instead of alert() -->
+        <div id="customAlertBox" class="hidden fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center p-4 z-50">
+            <div class="bg-white rounded-2xl shadow-xl p-6 max-w-sm w-full text-center">
+                <h3 id="customAlertTitle" class="text-xl font-bold text-red-600 mb-4"></h3>
+                <p id="customAlertMessage" class="text-gray-700 mb-6"></p>
+                <button onclick="hideCustomAlert()" class="py-2 px-5 bg-red-500 text-white font-semibold rounded-xl hover:bg-red-600 transition-colors">
+                    Got it!
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // The URL for your published Google Sheet CSV file
+        // Make sure this URL is correct and the sheet is published as CSV.
+        const GOOGLE_SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vS5RtwxBO-8yDIDX3f4hCgjiVRsNUO8LV1qITDc7r7DnudQR8_HcRVU5YAaVhjdDU4-jzfeTRHl8jBu/pub?output=csv';
+
+        let teamMembers = []; // This will hold your parsed data
+        let recognition; // For SpeechRecognition
+
+        // Get DOM elements
+        const nameInput = document.getElementById('nameInput');
+        const micButton = document.getElementById('micButton');
+        const resultDisplay = document.getElementById('resultDisplay');
+
+        // Function to display custom alert box
+        function showCustomAlert(title, message) {
+            document.getElementById('customAlertTitle').innerText = title;
+            document.getElementById('customAlertMessage').innerText = message;
+            document.getElementById('customAlertBox').classList.remove('hidden');
+        }
+
+        // Function to hide custom alert box
+        function hideCustomAlert() {
+            document.getElementById('customAlertBox').classList.add('hidden');
+        }
+
+        /**
+         * Parses CSV text into an array of JavaScript objects.
+         * Assumes the first row is the header.
+         * Maps CSV headers to friendly lowercase property names.
+         * @param {string} csvText - The CSV data as a string.
+         * @returns {Array<Object>} An array of objects representing the CSV data.
+         */
+        function parseCSV(csvText) {
+            const lines = csvText.trim().split('\n');
+            if (lines.length === 0) return [];
+
+            // Map CSV headers to internal property names
+            const headerMap = {
+                "Team Members": "teammembers",
+                "Market Covered": "marketcovered",
+                "Favorite NBA Team": "favoritenbateam",
+                "Travel Destinations": "traveldestinations",
+                "Number of Kids": "numberofkids",
+                "Kid Names": "kidnames",
+                "Interesting Face": "interestingface",
+                "Photo URL": "photourl",
+                // Assuming 'Free Time' might exist in your sheet although not provided in latest headers.
+                // If it exists, add it to headerMap. For now, it will be handled as undefined.
+                "Free Time": "freetime"
+            };
+
+            const headers = lines[0].split(',').map(header => header.trim());
+            const data = [];
+
+            for (let i = 1; i < lines.length; i++) {
+                const values = lines[i].split(',').map(value => value.trim());
+                const rowObject = {};
+                headers.forEach((header, index) => {
+                    const propName = headerMap[header]; // Get mapped property name
+                    let value = values[index];
+
+                    if (propName) { // Only process if header is recognized
+                        // Special handling for array fields (Travel Destinations, Free Time)
+                        if (propName === 'traveldestinations' || propName === 'freetime') {
+                            // Split by semicolon first, then comma if semicolon doesn't yield results
+                            let items = value.split(';').map(item => item.trim()).filter(item => item !== '');
+                            if (items.length <= 1 && value.includes(',')) {
+                                items = value.split(',').map(item => item.trim()).filter(item => item !== '');
+                            }
+                            rowObject[propName] = items;
+                        } else {
+                            rowObject[propName] = value;
+                        }
+                    }
+                });
+                data.push(rowObject);
+            }
+            return data;
+        }
+
+
+        /**
+         * Fetches sales team data from the published Google Sheet CSV URL.
+         */
+        async function fetchTeamData() {
+            resultDisplay.innerHTML = `
+                <div class="flex flex-col items-center justify-center h-full">
+                    <div class="loading-spinner mb-4"></div>
+                    <p class="generic-message">Hold on tight! ✨ I'm fetching all the awesome details about our team! 😊</p>
+                </div>
+            `;
+
+            try {
+                const response = await fetch(GOOGLE_SHEET_CSV_URL);
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}. Could not fetch data. Check your URL and publishing settings.`);
+                }
+
+                const csvText = await response.text();
+                teamMembers = parseCSV(csvText);
+
+                if (teamMembers.length === 0) {
+                     resultDisplay.innerHTML = `
+                        <p class="generic-message error">
+                            Uh oh! 😬 It looks like our team sheet is empty or something's a bit shy! Please double-check your Google Sheet has data and is published correctly.
+                        </p>
+                    `;
+                } else {
+                    // Initial welcome message now uses the generic-message styling
+                    resultDisplay.innerHTML = `<p class="generic-message">"Hey there, Sales Superstars! I'm ready to help you discover awesome facts about our team! What can I help you find today? 😊"</p>`;
+                }
+
+            } catch (error) {
+                console.error("Failed to fetch or parse team data:", error);
+                resultDisplay.innerHTML = `
+                    <p class="generic-message error">
+                        Oh no! 😟 I hit a snag loading the team data! <br>
+                        Error: ${error.message}<br>
+                        Please double-check your Google Sheet URL and ensure it's published to CSV!
+                    </p>
+                `;
+            }
+        }
+
+        /**
+         * Generates initials from a full name.
+         * @param {string} name - The full name (e.g., "Alex Johnson").
+         * @returns {string} The initials (e.g., "AJ").
+         */
+        function getInitials(name) {
+            if (!name) return '';
+            const parts = name.split(' ');
+            if (parts.length === 1) return parts[0].charAt(0).toUpperCase();
+            // Get first letter of first name and first letter of last name
+            return (parts[0].charAt(0) + (parts.length > 1 ? parts[parts.length - 1].charAt(0) : '')).toUpperCase();
+        }
+
+        /**
+         * Displays an individual team member's profile.
+         * @param {Object} member - The team member object.
+         */
+        function displayIndividualProfile(member) {
+            const resultDisplay = document.getElementById('resultDisplay');
+
+            // Construct "Family & Friends" info dynamically
+            let familyInfo = 'Details not available.';
+            if (member.numberofkids && parseInt(member.numberofkids) > 0 && member.kidnames) {
+                familyInfo = `${member.numberofkids} child(ren): ${member.kidnames}.`;
+            } else if (member.numberofkids && parseInt(member.numberofkids) > 0) {
+                familyInfo = `${member.numberofkids} child(ren).`;
+            } else if (member.kidnames) {
+                familyInfo = `Kids: ${member.kidnames}.`;
+            }
+            // Add check for pets if a 'pets' column exists or can be inferred from 'family' string
+            // For now, if no kid data, it will default to 'Details not available.'.
+
+            let profileVisualHtml = '';
+
+            // Only show large profile visual for individual profiles
+            if (member.photourl && member.photourl.trim() !== '') {
+                profileVisualHtml = `
+                    <img src="${member.photourl}"
+                         alt="Profile picture for ${member.teammembers || 'team member'}"
+                         class="profile-visual"
+                         onerror="this.onerror=null;this.replaceWith(this.nextElementSibling);">
+                    <div class="profile-visual" style="display:none;">${getInitials(member.teammembers)}</div>
+                `;
+            } else {
+                profileVisualHtml = `
+                    <div class="profile-visual">${getInitials(member.teammembers)}</div>
+                `;
+            }
+
+            const responseHtml = `
+                <div class="w-full text-left">
+                    <p class="response-intro">
+                        🌟 Ding, ding, ding! Found someone awesome! Let's get to know <span class="font-bold text-purple-700">${member.teammembers || 'Our amazing team member'}</span>! 🎉
+                    </p>
+                    ${profileVisualHtml}
+                    <div class="text-gray-700 text-lg">
+                        <div class="fact-item">
+                            <span class="fact-icon">📍</span> <span><strong>Market Covered:</strong> ${member.marketcovered || 'N/A'}</span>
+                        </div>
+                        <div class="fact-item">
+                            <span class="fact-icon">🏀</span> <span><strong>Favorite NBA Team:</strong> ${member.favoritenbateam || 'Not specified'}</span>
+                        </div>
+                        <div class="fact-item">
+                            <span class="fact-icon">💡</span> <span><strong>Fun Fact:</b> ${member.interestingface || 'No fun fact yet!'}</span>
+                        </div>
+                        <div class="fact-item">
+                            <span class="fact-icon">✈️</span> <span><strong>Travel Destinations:</strong> ${member.traveldestinations && member.traveldestinations.length > 0 ? member.traveldestinations.join(', ') : 'unknown territories'}. Wow!</span>
+                        </div>
+                        <div class="fact-item">
+                            <span class="fact-icon">💖</span> <span><strong>Family & Friends:</strong> ${familyInfo}</span>
+                        </div>
+                        <div class="fact-item">
+                            <span class="fact-icon">🥳</span> <span><strong>Free Time Fun:</b> ${member.freetime && member.freetime.length > 0 ? member.freetime.join(', ') : 'a good mystery'}.</span>
+                        </div>
+                        ${member.contactinfo ? `
+                        <div class="fact-item">
+                            <span class="fact-icon">📧</span> <span><strong>Get in Touch:</strong> ${member.contactinfo}</span>
+                        </div>` : ''}
+                    </div>
+                    <p class="mt-4 text-center text-blue-500 font-medium">
+                        Isn't ${member.teammembers ? member.teammembers.split(' ')[0] : 'this person'} just incredible?! What else can I help you discover? ✨
+                    </p>
+                </div>
+            `;
+            resultDisplay.innerHTML = responseHtml;
+        }
+
+        /**
+         * Displays a list of team members based on a query.
+         * @param {Array<Object>} members - Array of team member objects to display.
+         * @param {string} title - The title for the list.
+         * @param {string} noResultsMessage - Message to display if no members are found.
+         * @param {Function} [getExtraInfo] - Optional function to add extra info per list item.
+         */
+        function displayListResults(members, title, noResultsMessage, getExtraInfo = (member) => '') {
+            const resultDisplay = document.getElementById('resultDisplay');
+            let listHtml = '';
+            if (members.length > 0) {
+                // Modified to use centered-list-container for centering and remove list-style
+                listHtml = `<p class="response-intro">${title}</p><ul class="centered-list-container">`;
+                members.forEach(member => {
+                    // No profile image/initials icon for general list items as per request
+                    listHtml += `
+                        <li>
+                            <a href="#" onclick="event.preventDefault(); displayIndividualProfile(teamMembers.find(m => m.teammembers === '${member.teammembers.replace(/'/g, "\\'")}'))" class="clickable-name text-xl font-semibold text-blue-700">
+                                ✨ ${member.teammembers}${getExtraInfo(member)}
+                            </a>
+                        </li>
+                    `;
+                });
+                listHtml += `</ul>`;
+            } else {
+                listHtml = `<p class="generic-message warning">${noResultsMessage}</p>`;
+            }
+            resultDisplay.innerHTML = listHtml;
+        }
+
+        /**
+         * Displays a welcome message and a list of all team members.
+         */
+        function displayAllTeamMembersList() {
+            // Re-use displayListResults for consistent styling
+            displayListResults(
+                teamMembers,
+                "Here's our incredible sales squad! ✨ Go ahead, ask me about any of them, or something specific!",
+                "Uh oh! 😬 It seems I couldn't find any team members to list! Please ensure your sheet has data and is published correctly."
+            );
+        }
+
+
+        /**
+         * Processes the user's input, determining if it's a name search or a question.
+         */
+        async function handleQuery() {
+            const rawSearchTerm = nameInput.value.trim();
+            const searchTermLower = rawSearchTerm.toLowerCase();
+
+            if (!rawSearchTerm) {
+                resultDisplay.innerHTML = `
+                    <p class="generic-message warning animate-pulse">
+                        Oopsie! 😅 Looks like you haven't typed or said anything yet! What can I help you find? ✨
+                    </p>
+                `;
+                return;
+            }
+
+            if (teamMembers.length === 0) {
+                resultDisplay.innerHTML = `
+                    <p class="generic-message warning">
+                        Just a sec! ⏳ I'm still getting our team's info ready. Please try your question again in a moment!
+                    </p>
+                `;
+                await fetchTeamData(); // Try to refetch if empty
+                if (teamMembers.length === 0) return; // If still empty, exit
+            }
+
+            // Check for conversational prompts to get individual info
+            const tellMeAboutMatch = searchTermLower.match(/^(tell me about|info on|who is|what about|find about)\s+(.+)$/);
+            let targetName = null;
+
+            if (tellMeAboutMatch) {
+                targetName = tellMeAboutMatch[2].trim();
+            } else {
+                // If not a "tell me about" phrase, assume the whole input *might* be a name
+                targetName = searchTermLower;
+            }
+
+            const foundMember = teamMembers.find(member =>
+                member.teammembers && member.teammembers.toLowerCase().includes(targetName)
+            );
+
+
+            if (foundMember) {
+                displayIndividualProfile(foundMember);
+            } else {
+                // If not a direct name search, try to interpret as a question
+                processQuestion(searchTermLower);
+            }
+
+            nameInput.value = ''; // Clear input after search
+        }
+
+        /**
+         * Interprets the question and filters team members accordingly.
+         * @param {string} query - The lowercase user query string.
+         */
+        function processQuestion(query) {
+            let filteredMembers = [];
+            let title = "Here's what I found for you! ✨";
+            let noResultsMessage = "Hmm, didn't quite find anyone matching that. Let's try another question!";
+
+            // --- List All Team Members Query (expanded variations) ---
+            if (query.includes('list') && (query.includes('all') || query.includes('names') || query.includes('team')) ||
+                query.includes('who is on the team') || query.includes('who\'s the team') || query.includes('show names') || query.includes('display names') ||
+                query.includes('tell me about the team') || query.includes('who makes up the team') || query.includes('team overview') || query.includes('show me the whole team')) {
+                displayAllTeamMembersList();
+                return;
+            }
+
+            // --- Kids/Pets Query ---
+            if (query.includes('kids') || query.includes('children') || query.includes('pets') || query.includes('family')) {
+                filteredMembers = teamMembers.filter(member => {
+                    const hasKids = member.numberofkids && parseInt(member.numberofkids) > 0;
+                    const hasKidNames = member.kidnames && member.kidnames.trim() !== '';
+                    // For pets, check if 'Family' field or 'Interesting Face' mentions pets (e.g., 'dog', 'cat')
+                    const hasPetsKeyword = (member.family && (member.family.toLowerCase().includes('pet') || member.family.toLowerCase().includes('dog') || member.family.toLowerCase().includes('cat'))) ||
+                                           (member.interestingface && (member.interestingface.toLowerCase().includes('pet') || member.interestingface.toLowerCase().includes('dog') || member.interestingface.toLowerCase().includes('cat')));
+                    return hasKids || hasKidNames || hasPetsKeyword;
+                });
+                title = "Family & Pet Loving Team Members! 👨‍👩‍👧‍👦🐾";
+                if (filteredMembers.length === 0) noResultsMessage = "Looks like no one has shared details about their amazing kids or beloved pets yet! Maybe they're top secret? 😉";
+                displayListResults(filteredMembers, title, noResultsMessage, (member) => {
+                    let info = [];
+                    if (member.numberofkids && parseInt(member.numberofkids) > 0) info.push(`${member.numberofkids} kid(s)`);
+                    if (member.kidnames && member.kidnames.trim() !== '') info.push(`(Names: ${member.kidnames})`);
+                    // Attempt to extract pet info more specifically
+                    if (member.family && (member.family.toLowerCase().includes('pet') || member.family.toLowerCase().includes('dog') || member.family.toLowerCase().includes('cat'))) {
+                        info.push(`(Pets: ${member.family.replace(/.*(pet|dog|cat)\b/gi, (match) => match.trim()).trim() || 'Yes'})`);
+                    } else if (member.interestingface && (member.interestingface.toLowerCase().includes('pet') || member.interestingface.toLowerCase().includes('dog') || member.interestingface.toLowerCase().includes('cat'))) {
+                         info.push(`(Pets: Mentioned in fun fact)`);
+                    }
+                    return info.length > 0 ? `<span class="text-gray-500 text-sm italic">${info.join(', ')}</span>` : '';
+                });
+                return;
+            }
+
+            // --- Market Covered Query ---
+            const marketKeywords = ['market', 'territory', 'covers', 'region'];
+            const identifiedMarketKeyword = marketKeywords.find(keyword => query.includes(keyword));
+            if (identifiedMarketKeyword) {
+                // Attempt to extract specific region from query
+                const regions = ['midwest', 'northeast', 'southern', 'western canada', 'eastern canada', 'us', 'canada'];
+                let matchedRegion = null;
+                for (const region of regions) {
+                    if (query.includes(region)) {
+                        matchedRegion = region;
+                        break;
+                    }
+                }
+
+                if (matchedRegion) {
+                    filteredMembers = teamMembers.filter(member =>
+                        member.marketcovered && member.marketcovered.toLowerCase().includes(matchedRegion)
+                    );
+                    title = `Sales Superstars in the ${matchedRegion.toUpperCase()} Market! 🗺️`;
+                    if (filteredMembers.length === 0) noResultsMessage = `Oh no, I couldn't find anyone specifically covering the ${matchedRegion.toUpperCase()} market. Maybe they're hidden in plain sight! 👀`;
+                    displayListResults(filteredMembers, title, noResultsMessage, (member) => ` <span class="text-gray-500 text-sm italic">(Covers: ${member.marketcovered})</span>`);
+                } else {
+                    // If no specific region, show all markets
+                    filteredMembers = teamMembers.filter(member => member.marketcovered && member.marketcovered.trim() !== '');
+                    title = "Our Team's Market Coverage! 📍";
+                    if (filteredMembers.length === 0) noResultsMessage = "Nobody seems to have a market listed right now. Time to explore! 🧭";
+                    displayListResults(filteredMembers, title, noResultsMessage, (member) => ` <span class="text-gray-500 text-sm italic">(Covers: ${member.marketcovered})</span>`);
+                }
+                return;
+            }
+
+            // --- Favorite NBA Team Query ---
+            if (query.includes('nba team') || query.includes('favorite team') || query.includes('nba') || query.includes('basketball')) {
+                filteredMembers = teamMembers.filter(member =>
+                    member.favoritenbateam && member.favoritenbateam.trim() !== ''
+                );
+                title = "Our NBA Fanatics! 🏀🎉";
+                if (filteredMembers.length === 0) noResultsMessage = "It's a full court press, but I can't find any declared NBA fans! Maybe they're secret supporters?🤫";
+                displayListResults(filteredMembers, title, noResultsMessage, (member) => ` <span class="text-gray-500 text-sm italic">(Team: ${member.favoritenbateam})</span>`);
+                return;
+            }
+
+            // --- Travel Destinations Query ---
+            if (query.includes('travel') || query.includes('traveled') || query.includes('been to') || query.includes('explore') || query.includes('visited')) {
+                filteredMembers = teamMembers.filter(member =>
+                    member.traveldestinations && member.traveldestinations.length > 0 && member.traveldestinations[0] !== 'N/A' && member.traveldestinations[0] !== ''
+                );
+                title = "Our Globetrotting Sales Pros! ✈️🌍";
+                if (filteredMembers.length === 0) noResultsMessage = "Looks like everyone's been so busy crushing sales, no travel adventures logged yet! 😉";
+                displayListResults(filteredMembers, title, noResultsMessage, (member) => ` <span class="text-gray-500 text-sm italic">(Travels: ${member.traveldestinations.join(', ')})</span>`);
+                return;
+            }
+
+            // --- Interesting Fact Query ---
+            if (query.includes('fact') || query.includes('interesting')) {
+                filteredMembers = teamMembers.filter(member =>
+                    member.interestingface && member.interestingface.trim() !== ''
+                );
+                title = "Fascinating Facts about Our Team! 💡🤩";
+                if (filteredMembers.length === 0) noResultsMessage = "No interesting facts currently shared. Perhaps we need to dig deeper! 🤔";
+                displayListResults(filteredMembers, title, noResultsMessage, (member) => ` <span class="text-gray-500 text-sm italic">(Fact: ${member.interestingface})</span>`);
+                return;
+            }
+
+            // --- Free Time/Hobbies Query ---
+            if (query.includes('free time') || query.includes('hobbies') || query.includes('do in free time') || query.includes('likes to do')) {
+                filteredMembers = teamMembers.filter(member =>
+                    member.freetime && member.freetime.length > 0 && member.freetime[0] !== 'N/A' && member.freetime[0] !== ''
+                );
+                title = "Our Team's Amazing Hobbies! 🎨🎮";
+                if (filteredMembers.length === 0) noResultsMessage = "Looks like everyone's a workaholic! No hobbies listed yet. 😉";
+                displayListResults(filteredMembers, title, noResultsMessage, (member) => ` <span class="text-gray-500 text-sm italic">(Hobbies: ${member.freetime.join(', ')})</span>`);
+                return;
+            }
+
+
+            // --- Fallback: If no specific question detected, inform the user ---
+            resultDisplay.innerHTML = `
+                <p class="generic-message error">
+                    "Whoopsie! 🧐 I'm a super-smart directory, but I didn't quite get that question. Try asking me:<br>
+                    "Tell me about [Name]", "who has kids?", "who covers [Market]?", "who likes NBA?", "who loves travel?", "any fun facts?", "who has hobbies?", or "list all names!" ✨"
+                </p>
+            `;
+        }
+
+
+        /**
+         * Handles the Enter key press in the input field to trigger the search.
+         * @param {KeyboardEvent} event - The keyboard event object.
+         */
+        function handleKeyPress(event) {
+            if (event.key === 'Enter') {
+                handleQuery();
+            }
+        }
+
+        // --- Speech Recognition Setup ---
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+        if (SpeechRecognition) {
+            recognition = new SpeechRecognition();
+            recognition.continuous = false; // Stop after one utterance
+            recognition.lang = 'en-US'; // Set language
+
+            recognition.onstart = () => {
+                micButton.classList.add('listening');
+                nameInput.placeholder = "Listening for your awesome question... 🎤";
+                nameInput.value = ""; // Clear input when listening starts
+            };
+
+            recognition.onresult = (event) => {
+                const transcript = event.results[0][0].transcript;
+                nameInput.value = transcript;
+                handleQuery(); // Process the query once transcribed
+            };
+
+            recognition.onend = () => {
+                micButton.classList.remove('listening');
+                nameInput.placeholder = "Ask me anything (e.g., tell me about Alex, or who has kids?)";
+            };
+
+            recognition.onerror = (event) => {
+                console.error("Speech recognition error:", event.error);
+                showCustomAlert("Voice Input Error! 😅", `Oops! There was a voice input hiccup: "${event.error}". No worries, try typing or tap the mic again!`);
+                micButton.classList.remove('listening'); // Ensure button stops animating on error
+                nameInput.placeholder = "Ask me anything (e.g., tell me about Alex, or who has kids?)";
+            };
+
+            micButton.addEventListener('click', () => {
+                if (recognition.listening) { // Check if recognition is active
+                    recognition.stop();
+                } else {
+                    recognition.start();
+                }
+            });
+        } else {
+            // Provide a fallback message if SpeechRecognition is not supported
+            micButton.style.display = 'none'; // Hide the mic button
+            nameInput.placeholder = "Voice input not supported here. Please type your question!";
+            console.warn("Web Speech API (SpeechRecognition) not supported in this browser.");
+            showCustomAlert("Browser Alert! 📢", "Heads up! Your browser doesn't quite support voice input. No problem, just use the keyboard to ask away! 😊");
+        }
+
+        // Fetch data when the page loads
+        window.onload = fetchTeamData;
+    </script>
+</body>
+</html>
